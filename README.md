@@ -1,5 +1,6 @@
-<img width="1200" height="675" alt="qrmi-sc26-tutorial-promo-light" src="https://github.com/user-attachments/assets/fbfbe1ab-0bef-429d-b434-f2ba3e64784f" />
-
+<a href="https://qrmi-community.github.io/tutorials/sc26/">
+  <img width="800" alt="SC26 Tutorial: Workload-Manager-Agnostic QPU Integration with QRMI (TUT-171), Mon Nov 16, 2026, 1:30–5:00 PM CST, Room W184d, Chicago" src="https://github.com/user-attachments/assets/abdc165d-2d21-4088-a125-65ae1f2a3b78" />
+</a>
 
 **Tutorial preparation for November 16, 2026.** In the batch-scheduler hands-on you
 choose **one workload manager** and **one quantum provider**, and follow only
