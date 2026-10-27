@@ -1,0 +1,14 @@
+#!/bin/bash
+# Run a Python program in a PBS job. The #PBS lines apply when the script is submitted
+# as a job script; with `qsub ... -- <path> args` PBS runs it as a command and ignores them.
+#PBS -N run_python
+#PBS -l select=1:ncpus=1
+#PBS -j oe
+#PBS -W umask=022
+
+# Change to the directory where the job was submitted
+cd "$PBS_O_WORKDIR"
+
+# The participant's environment from Module 2; qsub -v PYENV=<dir> selects another one.
+source "${PYENV:-/shared/pyenv}/bin/activate"
+python "$@"

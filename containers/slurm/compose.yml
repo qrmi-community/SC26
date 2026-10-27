@@ -1,0 +1,154 @@
+# Allow ping inside the containers. Podman drops NET_RAW by default and limits
+# ping_group_range to GID 0; this works the same on Docker/Rancher Desktop.
+# The range ends at 65536: rootless Docker maps only 65536 subordinate GIDs by
+# default and rejects a larger range ("failed to write sysctl ... invalid argument").
+x-ping: &ping
+  cap_add:
+    - NET_RAW
+  sysctls:
+    net.ipv4.ping_group_range: "0 65536"
+
+services:
+  mysql:
+    image: mariadb:10.11
+    hostname: mysql
+    container_name: mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: slurm_acct_db
+      MYSQL_USER: slurm
+      MYSQL_PASSWORD: password
+    volumes:
+      - var_lib_mysql:/var/lib/mysql
+      - ./shared:/shared
+    networks:
+      - slurm-network
+
+  slurmdbd:
+    <<: *ping
+    image: slurm-docker-cluster:${IMAGE_TAG}
+    pull_policy: never   # built or loaded locally, never pulled from a registry
+    build:
+      context: .
+      args:
+        SLURM_TAG: ${SLURM_TAG}
+    command: ["slurmdbd"]
+    container_name: slurmdbd
+    hostname: slurmdbd
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - var_log_slurmdbd:/var/log/slurm
+      - ./shared:/shared
+    expose:
+      - "6819"
+    depends_on:
+      - mysql
+    networks:
+      - slurm-network
+
+  slurmctld:
+    <<: *ping
+    image: slurm-docker-cluster:${IMAGE_TAG}
+    pull_policy: never
+    command: ["slurmctld"]
+    container_name: slurmctld
+    hostname: slurmctld
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_slurmctld:/var/log/slurm
+      - ./shared:/shared
+    expose:
+      - "6817"
+    depends_on:
+      - "slurmdbd"
+    networks:
+      - slurm-network
+
+  c1:
+    <<: *ping
+    image: slurm-docker-cluster:${IMAGE_TAG}
+    pull_policy: never
+    command: ["slurmd"]
+    hostname: c1
+    container_name: c1
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_c1:/var/log/slurm
+      - ./shared:/shared
+      - home:/home
+    expose:
+      - "6818"
+    depends_on:
+      - "slurmctld"
+    networks:
+      - slurm-network
+
+  c2:
+    <<: *ping
+    image: slurm-docker-cluster:${IMAGE_TAG}
+    pull_policy: never
+    command: ["slurmd"]
+    hostname: c2
+    container_name: c2
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_c2:/var/log/slurm
+      - ./shared:/shared
+      - home:/home
+    expose:
+      - "6818"
+    depends_on:
+      - "slurmctld"
+      - c1
+    networks:
+      - slurm-network
+
+  slurm-login:
+    image: slurm-docker-cluster:${IMAGE_TAG}
+    pull_policy: never
+    command: ["login"]
+    hostname: login
+    container_name: login
+    stdin_open: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    sysctls:
+      net.ipv4.ping_group_range: "0 65536"
+    tty: true
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - ./shared:/shared
+      - home:/home
+    depends_on:
+      - "slurmctld"
+      - c1
+    networks:
+      - slurm-network
+
+volumes:
+  etc_munge:
+  etc_slurm:
+  slurm_jobdir:
+  var_lib_mysql:
+  var_log_slurmdbd:
+  var_log_slurmctld:
+  var_log_c1:
+  var_log_c2:
+  # Home shared by the login and compute nodes (like an NFS home).
+  # On first mount, /home from the image (user's initial files and ownership) is copied into it;
+  # c1 mounts it first, so c2 and login depend on c1.
+  home:
+
+networks:
+  slurm-network:
+    driver: bridge

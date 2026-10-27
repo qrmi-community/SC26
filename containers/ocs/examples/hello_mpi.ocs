@@ -1,0 +1,17 @@
+#!/bin/bash
+# Equivalent of: srun -N 2 -n 4 --mpi=pmix ./hello_mpi
+#   -pe mpi 4 : 4 slots in the "mpi" parallel environment; its allocation_rule $round_robin
+#               spreads them over the execution nodes (2 per node)
+#$ -N hello_mpi
+#$ -pe mpi 4
+#$ -cwd
+#$ -j y
+#$ -S /bin/bash
+
+source /etc/profile.d/openmpi.sh
+
+echo "=== PE_HOSTFILE ==="
+cat "$PE_HOSTFILE"
+
+echo "=== mpirun (launched via qrsh -inherit; no -np or hostfile needed) ==="
+mpirun ./hello_mpi

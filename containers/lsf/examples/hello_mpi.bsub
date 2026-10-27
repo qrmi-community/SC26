@@ -1,0 +1,9 @@
+#!/bin/bash
+# Equivalent of: srun -N 2 -n 4 --mpi=pmix ./hello_mpi
+#   -R "span[ptile=2]" -n 4 : 2 tasks per node, 4 tasks total, 2 nodes allocated
+#BSUB -J hello_mpi
+#BSUB -R "span[ptile=2]" -n 4
+#BSUB -Is
+
+echo "=== mpirun (no -np or hostfile needed) ==="
+mpirun ./hello_mpi

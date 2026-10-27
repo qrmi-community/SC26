@@ -1,0 +1,18 @@
+{
+  "resources": [
+    {
+      "name": "fake_brisbane",
+      "type": "ibm-quantum-system",
+      "environment": {
+        "QRMI_IBM_QS_IAM_APIKEY": ""
+      }
+    },
+    {
+      "name": "ibm_kingston",
+      "type": "ibm-quantum-compute-service",
+      "environment": {
+        "QRMI_IBM_QCS_IAM_APIKEY": ""
+      }
+    }
+  ]
+}

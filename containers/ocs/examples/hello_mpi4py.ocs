@@ -1,0 +1,11 @@
+#!/bin/bash
+# Runs mpi4py (Python 3.12) on 2 nodes with 4 processes in total
+#$ -N hello_mpi4py
+#$ -pe mpi 4
+#$ -cwd
+#$ -j y
+#$ -S /bin/bash
+
+source /etc/profile.d/openmpi.sh
+
+mpirun python3.12 hello_mpi4py.py

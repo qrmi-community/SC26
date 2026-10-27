@@ -1,0 +1,19 @@
+# Example configuration of the QRMI Load Sensor for OCS (qrmi-ocs-load-sensor from
+# https://github.com/hpc-gridware/qpu-resource); copied to /etc in the containers.
+# Copy it to /etc/qrmi-ocs-load-sensor.yaml to use it.
+load_sensor:
+  enabled: true
+  scope: global
+  resource_name: qpu_ready
+  slots_resource_name: ""
+  provider: warden
+  timeout_seconds: 3
+
+warden:
+  base_url: http://warden:4207
+  endpoint: /accessible
+  tls_verify: true
+
+static:
+  ready: true
+  state_file: ""

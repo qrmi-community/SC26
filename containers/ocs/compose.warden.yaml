@@ -1,0 +1,34 @@
+services:
+  ocs-master:
+    extra_hosts:
+      - "warden:172.31.0.20"
+  ocs-node1:
+    extra_hosts:
+      - "warden:172.31.0.20"
+  ocs-node2:
+    extra_hosts:
+      - "warden:172.31.0.20"
+  warden:
+    image: localhost/sc26-warden:0.3.2
+    pull_policy: never   # built or loaded locally, never pulled from a registry
+    build: ../warden
+    hostname: warden
+    container_name: warden
+    init: true
+    stop_grace_period: 30s
+    volumes:
+      - ocs-munge:/etc/munge
+      - warden-state:/var/lib/warden
+    depends_on:
+      - ocs-master               # ocs-master fills ocs-munge with its key on first start
+    networks:
+      ocsnet:
+        ipv4_address: 172.31.0.20
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4207/accessible"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+volumes:
+  warden-state:

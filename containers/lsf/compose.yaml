@@ -1,0 +1,116 @@
+services:
+  # Ephemeral key generator service that provisions the shared SSH and home volumes
+  ssh-generator:
+    image: alpine:latest
+    container_name: lsf_ssh_init
+    command: >
+      sh -c "apk add --no-cache openssh-client &&
+             # Initialize Root SSH Keys
+             if [ ! -f /shared_ssh/id_ed25519 ]; then
+               ssh-keygen -t ed25519 -N '' -f /shared_ssh/id_ed25519 -C 'lsf-cluster-root-key' &&
+               cp /shared_ssh/id_ed25519.pub /shared_ssh/authorized_keys &&
+               chmod 700 /shared_ssh &&
+               chmod 600 /shared_ssh/*;
+             fi &&
+             
+             # Initialize lsfuser shared home & SSH (Fix ownership to UID/GID 1002)
+             mkdir -p /home/lsfuser/.ssh &&
+             if [ ! -f /home/lsfuser/.ssh/id_ed25519 ]; then
+               ssh-keygen -t ed25519 -N '' -f /home/lsfuser/.ssh/id_ed25519 -C 'lsfuser-key' &&
+               cp /home/lsfuser/.ssh/id_ed25519.pub /home/lsfuser/.ssh/authorized_keys;
+             fi &&
+             chown -R 1002:1002 /home/lsfuser &&
+             chmod 750 /home/lsfuser &&
+             chmod 700 /home/lsfuser/.ssh &&
+             chmod 600 /home/lsfuser/.ssh/*"
+    volumes:
+      - ssh_keys:/shared_ssh
+      - lsf_home:/home
+
+  lsf-head:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lsf-head
+    hostname: lsf-head
+    privileged: true
+    init: true # Reaps stopped daemons, so "service munge restart" works
+    ports:
+      - "127.0.0.1:2222:22"   # local only: root can log in with password root
+    environment:
+      NODE_ROLE: head
+    depends_on:
+      ssh-generator:
+        condition: service_completed_successfully # Ensures keys and homes exist before starting
+    volumes:
+      - opt_install:/opt
+      - ./shared:/shared:z
+      - ssh_keys:/root/.ssh:ro # Mounts keys read-only to root's home directory
+      - lsf_home:/home
+      - munge_config:/etc/munge
+    networks:
+      lsfnet:
+        ipv4_address: 10.10.10.10
+
+  compute01:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: compute01
+    hostname: compute01
+    privileged: true
+    init: true
+    environment:
+      NODE_ROLE: compute
+    depends_on:
+      ssh-generator:
+        condition: service_completed_successfully
+      lsf-head:
+        condition: service_started
+    volumes:
+      - opt_install:/opt
+      - ./shared:/shared:z
+      - ssh_keys:/root/.ssh:ro
+      - lsf_home:/home
+      - munge_config:/etc/munge
+    networks:
+      lsfnet:
+        ipv4_address: 10.10.10.11
+
+  compute02:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: compute02
+    hostname: compute02
+    privileged: true
+    init: true
+    environment:
+      NODE_ROLE: compute
+    depends_on:
+      ssh-generator:
+        condition: service_completed_successfully
+      lsf-head:
+        condition: service_started
+    volumes:
+      - opt_install:/opt
+      - ./shared:/shared:z
+      - ssh_keys:/root/.ssh:ro
+      - lsf_home:/home
+      - munge_config:/etc/munge
+    networks:
+      lsfnet:
+        ipv4_address: 10.10.10.12
+
+volumes:
+  opt_install:
+  munge_config:
+  ssh_keys:
+  lsf_home:
+
+networks:
+  lsfnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.10.0/24

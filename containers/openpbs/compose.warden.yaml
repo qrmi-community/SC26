@@ -1,0 +1,35 @@
+# Pasqal Local: a local Warden with a simulated QPU, for the Pasqal exercises.
+#   docker compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml up -d
+x-warden-hosts: &warden-hosts
+  extra_hosts:
+    - "warden:172.30.0.20"
+
+services:
+  pbs-server: *warden-hosts
+  pbs-node1: *warden-hosts
+  pbs-node2: *warden-hosts
+  warden:
+    image: localhost/sc26-warden:0.3.2
+    pull_policy: never
+    build: ../warden
+    hostname: warden
+    container_name: warden
+    init: true
+    stop_grace_period: 30s
+    volumes:
+      - pbs-munge:/etc/munge
+      - warden-state:/var/lib/warden
+    depends_on:
+      - pbs-server               # created first, so the pbs-munge volume gets the key from its image
+    networks:
+      pbsnet:
+        ipv4_address: 172.30.0.20
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4207/accessible"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  warden-state:

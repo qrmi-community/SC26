@@ -1,0 +1,9 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#$ -q qpu.q
+#$ -l h_rt=00:10:00
+set -euo pipefail
+# The participant's environment from Module 2; qsub -v PYENV=<dir> selects another one.
+source "${PYENV:-/shared/pyenv}/bin/activate"
+exec python "$@"

@@ -1,0 +1,42 @@
+# Build before the session (container guide, "Tutorial images"); the cluster then runs without compiling Rust or Go.
+ARG OCS_IMAGE=localhost/ocs:el9-py312-ompi
+FROM ${OCS_IMAGE} AS build
+
+ARG QRMI_VERSION=0.26.4
+ARG ADAPTER_REF=c91c4513487581417ebc399c9fe479b8eea42182
+ENV CARGO_HOME=/opt/rust/cargo
+RUN mkdir -p /build/qrmi /build/adapter /opt/qrmi/bin \
+ && curl -fsSL "https://github.com/qiskit-community/qrmi/archive/${QRMI_VERSION}.tar.gz" \
+    | tar xz --strip-components=1 -C /build/qrmi \
+ && curl -fsSL "https://github.com/hpc-gridware/qpu-resource/archive/${ADAPTER_REF}.tar.gz" \
+    | tar xz --strip-components=1 -C /build/adapter
+
+WORKDIR /build/qrmi
+RUN cargo build --release --locked --features munge -j 4 \
+ && install -m 755 target/release/libqrmi.so /opt/qrmi/bin/libqrmi.so \
+ && install -m 644 qrmi.h /opt/qrmi/qrmi.h
+RUN python3.12 -m venv /opt/qrmi/venv \
+ && /opt/qrmi/venv/bin/pip install 'maturin[patchelf]==1.12.6' \
+ && PATH=/opt/qrmi/venv/bin:$PATH maturin build --release --locked -j 4 \
+    --features pyo3,pyo3/abi3,munge -i /opt/qrmi/venv/bin/python \
+ && /opt/qrmi/venv/bin/pip install target/wheels/qrmi-*.whl \
+    pulser-core==1.9.0 pulser-simulation==1.9.0 \
+    qiskit==2.4.1 qiskit-ibm-runtime==0.47.0 \
+ && /opt/qrmi/venv/bin/pip check
+
+WORKDIR /build/adapter
+RUN go build -buildvcs=false -o /opt/qrmi/bin/adapter ./src/cmd/gridware-adapter \
+ && go build -buildvcs=false -o /opt/qrmi/bin/qrmi-ocs-load-sensor ./src/cmd/qrmi-ocs-load-sensor
+# The queue prolog and epilog start through qrmi-ocs-launch, which gives the hooks a clean
+# environment. It must be static, so no dynamic loader reads the job's environment.
+RUN CGO_ENABLED=0 go build -buildvcs=false -o /opt/qrmi/bin/qrmi-ocs-launch ./src/cmd/qrmi-ocs-launch
+ENV CGO_CFLAGS=-I/opt/qrmi
+ENV CGO_LDFLAGS="-L/opt/qrmi/bin -lqrmi -Wl,-rpath,/opt/qrmi/bin"
+RUN go build -buildvcs=false -tags qrmi -o /opt/qrmi/bin/qrmi-ocs-prolog ./src/cmd/qrmi-ocs-prolog-go \
+ && go build -buildvcs=false -tags qrmi -o /opt/qrmi/bin/qrmi-ocs-epilog ./src/cmd/qrmi-ocs-epilog-go
+
+FROM ${OCS_IMAGE}
+COPY --from=build /opt/qrmi /opt/qrmi
+COPY qrmi_config.json.example /etc/qrmi/qrmi_config.json.example
+COPY qrmi-ocs-load-sensor.yaml.example /etc/qrmi-ocs-load-sensor.yaml.example
+ENV PATH=/opt/qrmi/venv/bin:/opt/qrmi/bin:$PATH

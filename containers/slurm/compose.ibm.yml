@@ -1,0 +1,79 @@
+# Local IBM Quantum System API emulator: the community API emulator (qrmi-community/simulated_quantum_resource,
+# Qiskit Aer) and its RustFS S3 storage, on the Slurm cluster network. Not the IBM service.
+#   docker compose -f compose.yml -f compose.ibm.yml up -d
+# Inside slurm-network, the names "qsa-sim" and "rustfs" resolve via Compose's built-in DNS,
+# so no fixed IPs or extra_hosts are needed (slurm-network has no fixed subnet).
+
+# Allow ping inside the containers. Podman drops NET_RAW by default and limits
+# ping_group_range to GID 0; this works the same on Docker/Rancher Desktop.
+# The range ends at 65536: rootless Docker maps only 65536 subordinate GIDs by
+# default and rejects a larger range ("failed to write sysctl ... invalid argument").
+x-ping: &ping
+  cap_add:
+    - NET_RAW
+  sysctls:
+    net.ipv4.ping_group_range: "0 65536"
+
+services:
+  qsa-sim:
+    <<: *ping
+    image: localhost/qsa-sim:0d547e7
+    pull_policy: never   # built or loaded locally, never pulled from a registry
+    build: https://github.com/qrmi-community/simulated_quantum_resource.git#0d547e7d329b8bd3315392e9117f116dc1661ddd
+    hostname: qsa-sim
+    container_name: qsa-sim
+    environment:
+      QSASIM_IAM_APIKEY: sc26apikey
+      QSASIM_SERVICE_CRN: crn:v1:local:sc26
+      QSASIM_BIND_PORT: "8290"
+      PYTHONUNBUFFERED: "1"
+      # Aer's bundled libgomp fails to load on the image's Debian 13 base without more static
+      # TLS surplus.
+      GLIBC_TUNABLES: glibc.rtld.optional_static_tls=65536
+    networks:
+      - slurm-network
+    depends_on:
+      createbuckets:
+        condition: service_completed_successfully
+
+  rustfs:
+    <<: *ping
+    image: rustfs/rustfs@sha256:9ca9559533b537d10482fe923288b676ad08f92a7069d9a17327fbae3cab688b
+    hostname: rustfs
+    container_name: rustfs
+    environment:
+      RUSTFS_ACCESS_KEY: sc26access
+      RUSTFS_SECRET_KEY: sc26secret
+      RUSTFS_REGION: us-east-1
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - 127.0.0.1:9000:9000   # S3 API (from the host)
+      - 127.0.0.1:9001:9001   # Web console (from the host)
+    volumes:
+      - rustfs-data:/data
+    networks:
+      - slurm-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9000/health/ready"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+  createbuckets:
+    image: rustfs/rc@sha256:ab024bfebee49a750ce886b4c70963ccd9ddaa03f491704a90710641d7a26699
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/rc alias set s3 http://rustfs:9000 sc26access sc26secret --region us-east-1 --bucket-lookup path &&
+      /usr/bin/rc bucket create s3/sc26 --ignore-existing"
+    networks:
+      - slurm-network
+
+volumes:
+  rustfs-data:

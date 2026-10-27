@@ -1,0 +1,19 @@
+services:
+  ocs-master:
+    image: localhost/sc26-ocs-qrmi:0.26.4
+    pull_policy: never   # built or loaded locally, never pulled from a registry
+    build:
+      context: .
+      dockerfile: Dockerfile.qrmi
+  ocs-node1:
+    image: localhost/sc26-ocs-qrmi:0.26.4
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: Dockerfile.qrmi
+  ocs-node2:
+    image: localhost/sc26-ocs-qrmi:0.26.4
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: Dockerfile.qrmi

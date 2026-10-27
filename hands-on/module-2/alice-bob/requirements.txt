@@ -1,0 +1,3 @@
+python-dotenv
+qrmi[alice-bob]
+qiskit-alice-bob-provider>=3.0

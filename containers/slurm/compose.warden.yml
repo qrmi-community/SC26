@@ -1,0 +1,29 @@
+# Pasqal Local: a local Warden with a simulated QPU, for the Pasqal exercises.
+#   docker compose -f compose.yml -f compose.ibm.yml -f compose.warden.yml up -d
+services:
+  warden:
+    image: localhost/sc26-warden:0.3.2
+    pull_policy: never
+    build: ../warden
+    hostname: warden
+    container_name: warden
+    init: true
+    stop_grace_period: 30s
+    volumes:
+      # Pasqal Local authenticates users to Warden with the cluster's MUNGE key;
+      # slurmdbd creates the volume first, so the key comes from the Slurm image
+      - etc_munge:/etc/munge
+      - warden-state:/var/lib/warden
+    depends_on:
+      - slurmdbd
+    networks:
+      - slurm-network
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4207/accessible"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  warden-state:

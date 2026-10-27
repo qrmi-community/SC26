@@ -1,0 +1,37 @@
+# Pasqal Local: a local Warden with a simulated QPU, for the Pasqal exercises.
+#   podman compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml up -d
+# Warden authenticates users with the cluster's MUNGE key: it mounts the munge_config
+# volume, which lsf-head fills with its key on first start.
+services:
+  lsf-head:
+    extra_hosts: &warden-hosts
+      - "warden:10.10.10.20"
+  compute01:
+    extra_hosts: *warden-hosts
+  compute02:
+    extra_hosts: *warden-hosts
+  warden:
+    image: localhost/sc26-warden:0.3.2
+    pull_policy: never   # built or loaded locally, never pulled from a registry
+    build: ../warden
+    hostname: warden
+    container_name: warden
+    init: true
+    stop_grace_period: 30s
+    volumes:
+      - munge_config:/etc/munge
+      - warden-state:/var/lib/warden
+    depends_on:
+      - lsf-head
+    networks:
+      lsfnet:
+        ipv4_address: 10.10.10.20
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4207/accessible"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  warden-state:

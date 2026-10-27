@@ -1,0 +1,60 @@
+{
+  "resources": [
+    {
+      "name": "fake_brisbane",
+      "type": "ibm-quantum-system",
+      "environment": {
+        "QRMI_IBM_QS_ENDPOINT": "http://qsa-sim:8290",
+        "QRMI_IBM_QS_IAM_ENDPOINT": "http://qsa-sim:8290",
+        "QRMI_IBM_QS_IAM_APIKEY": "sc26apikey",
+        "QRMI_IBM_QS_SERVICE_CRN": "crn:v1:local:sc26",
+        "QRMI_IBM_QS_AWS_ACCESS_KEY_ID": "sc26access",
+        "QRMI_IBM_QS_AWS_SECRET_ACCESS_KEY": "sc26secret",
+        "QRMI_IBM_QS_S3_ENDPOINT": "http://rustfs:9000",
+        "QRMI_IBM_QS_S3_BUCKET": "sc26",
+        "QRMI_IBM_QS_S3_REGION": "us-east-1"
+      }
+    },
+    {
+      "name": "ibm_kingston",
+      "type": "ibm-quantum-compute-service",
+      "environment": {
+        "QRMI_IBM_QCS_ENDPOINT": "https://quantum.cloud.ibm.com/api/v1",
+        "QRMI_IBM_QCS_IAM_ENDPOINT": "https://iam.cloud.ibm.com",
+        "QRMI_IBM_QCS_SESSION_MODE": "batch",
+        "QRMI_IBM_QCS_IAM_APIKEY": "<YOUR IAM APIKEY FOR THIS BACKEND>",
+        "QRMI_IBM_QCS_SERVICE_CRN": "<YOUR IQP INSTANCE CRN>"
+      }
+    },
+    {
+      "name": "EMU_FREE",
+      "type": "pasqal-cloud",
+      "environment": {
+        "PASQAL_CONFIG_ROOT": "/home/pbsuser"
+      }
+    },
+    {
+      "name": "PASQAL_LOCAL",
+      "type": "pasqal-local",
+      "environment": {
+        "QRMI_WARDEN_URL": "http://warden:4207"
+      }
+    },
+    {
+      "name": "garnet_mock",
+      "type": "iqm-server",
+      "environment": {
+        "QRMI_IQM_ISA_ENDPOINT": "https://resonance.meetiqm.com",
+        "QRMI_IQM_ISA_TOKEN": "<YOUR API TOKEN>"
+      }
+    },
+    {
+      "name": "ab_emu_1q_lescanne_2020",
+      "type": "alice-bob-felis",
+      "environment": {
+        "QRMI_AB_FELIS_BASE_ENDPOINT": "<FELIS URL>",
+        "QRMI_AB_FELIS_API_KEY": "<FELIS API KEY>"
+      }
+    }
+  ]
+}

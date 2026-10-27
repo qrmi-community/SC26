@@ -1,0 +1,10 @@
+#!/bin/bash
+# Equivalent of: srun -N 2 -n 4 --mpi=pmix python hello_mpi4py.py
+#   -R "span[ptile=2]" -n 4 : 2 tasks per node, 4 tasks total, 2 nodes allocated
+#BSUB -J hello_mpi4py
+#BSUB -R "span[ptile=2]" -n 4
+#BSUB -Is
+
+echo "=== mpirun (no -np or hostfile needed) ==="
+source $HOME/pyenv/bin/activate
+mpirun python3 ./hello_mpi4py.py

@@ -1,0 +1,78 @@
+# Open Cluster Scheduler: 1 master + 2 execution nodes
+# All three containers use the same image; the role is selected with OCS_ROLE
+
+x-ocs-common: &ocs-common
+  build:
+    context: .
+  image: localhost/ocs:el9-py312-ompi   # same tag for all, so the 2nd and 3rd builds come from the cache
+  pull_policy: never   # built or loaded locally, never pulled from a registry
+  init: true                     # run an init as PID 1 to reap zombie processes
+  shm_size: 256m                 # for intra-node MPI communication (shared memory)
+  stop_grace_period: 30s         # time allowed to stop OCS on shutdown
+  volumes:
+    - ./shared:/shared:z         # directory shared with the host (for exchanging files)
+    - ocs-home:/home             # home shared by all three containers (like an NFS home)
+    - ocs-root:/opt/ocs          # OCS installation and cell (configuration and spool), shared like on a real cluster
+    - ocs-munge:/etc/munge       # MUNGE key shared by all nodes
+  extra_hosts:                   # resolve names (forward and reverse) via /etc/hosts instead of DNS
+    - "ocs-master:172.31.0.10"
+    - "ocs-node1:172.31.0.11"
+    - "ocs-node2:172.31.0.12"
+  # Allow ping. The range ends at 65536: rootless Docker maps only 65536
+  # subordinate GIDs by default and rejects a larger range.
+  cap_add:
+    - NET_RAW
+  sysctls:
+    net.ipv4.ping_group_range: "0 65536"
+
+services:
+  ocs-master:
+    <<: *ocs-common
+    container_name: ocs-master
+    hostname: ocs-master         # fixed, because the hostname is recorded in the OCS configuration
+    environment:
+      OCS_ROLE: master
+      OCS_NODES: "ocs-node1 ocs-node2"
+    networks:
+      ocsnet:
+        ipv4_address: 172.31.0.10
+
+  ocs-node1:
+    <<: *ocs-common
+    container_name: ocs-node1
+    hostname: ocs-node1
+    environment:
+      OCS_ROLE: execd
+      OCS_MASTER_HOST: ocs-master
+    networks:
+      ocsnet:
+        ipv4_address: 172.31.0.11
+    depends_on:
+      - ocs-master
+
+  ocs-node2:
+    <<: *ocs-common
+    container_name: ocs-node2
+    hostname: ocs-node2
+    environment:
+      OCS_ROLE: execd
+      OCS_MASTER_HOST: ocs-master
+    networks:
+      ocsnet:
+        ipv4_address: 172.31.0.12
+    depends_on:
+      - ocs-master
+
+volumes:
+  # On first mount, the contents from the image are copied into them
+  # (/home: ocsuser's initial files; /opt/ocs: the OCS binaries; /etc/munge: the MUNGE key)
+  # Kept by `docker compose down`; removed with `docker compose down -v`
+  ocs-home:
+  ocs-root:
+  ocs-munge:
+
+networks:
+  ocsnet:
+    ipam:
+      config:
+        - subnet: 172.31.0.0/24
