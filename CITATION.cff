@@ -1,0 +1,104 @@
+abstract: '<p>This record contains the hands-on materials for the SC26 tutorial &ldquo;Workload-Manager-Agnostic
+  QPU Integration with QRMI&rdquo; (TUT-171), held on November 16, 2026 in Chicago.
+  The tutorial shows how quantum processing units (QPUs) and quantum emulators can
+  be brought into conventional HPC batch environments through QRMI (Quantum Resource
+  Management Interface). QRMI is an open interface that exposes quantum resources
+  and tasks through a common API, with an implementation specific to each provider.</p>
+
+  <p>The materials put one integration pattern into practice on four HPC workload
+  managers: Slurm, OpenPBS, IBM Spectrum LSF (Community Edition) and Open Cluster
+  Scheduler (OCS). They use three quantum providers: IBM Quantum, Pasqal and Alice
+  &amp; Bob. The pattern follows a batch job through its whole life. A job requests
+  a named quantum resource. Validator plugins check the request when it is submitted,
+  and the scheduler represents the resource as a license, counter or complex. A sensor
+  can report the resource&rsquo;s availability. Job execution plugins (the Slurm SPANK
+  plugin, OpenPBS hooks, the OCS prolog and epilog, the LSF JOB_STARTER) acquire the
+  resource before the user program runs and release it afterwards.</p>
+
+  <p>The repository contains:</p>
+
+  <ul>
+
+  <li><strong>containers/</strong>: Docker/Podman Compose definitions that build a
+  small cluster on a laptop for each workload manager (one head node and two compute
+  nodes). They include add-ons for the local IBM Quantum System API emulator and for
+  a mock of Pasqal&rsquo;s Warden service, which simulates a QPU with QuTiP.</li>
+
+  <li><strong>hands-on/</strong>: four tutorial modules.
+
+  <ul>
+
+  <li>Module 1 installs and configures the QRMI integration of the chosen scheduler.</li>
+
+  <li>Module 2 submits backend-specific payloads through the low-level QRMI task API:
+  a Qiskit Sampler input, a serialized Pulser sequence or a QIR program.</li>
+
+  <li>Module 3 runs the same kind of programs with the providers&rsquo; SDKs (Qiskit
+  Sampler, Pulser) through QRMI.</li>
+
+  <li>The optional Module 4 passes quantum results to an MPI post-processing program
+  run by the same workload manager.</li>
+
+  <li>Also included: an exercise that observes how the scheduler holds, cancels and
+  releases the resource, a reference for the QRMI configuration format, and a glossary
+  of terms.</li>
+
+  </ul>
+
+  </li>
+
+  <li><strong>onboarding/</strong>: account setup guides for IBM Quantum, Pasqal Cloud
+  and Alice &amp; Bob.</li>
+
+  </ul>
+
+  <p>All exercises can run on emulators (IBM&rsquo;s local emulator, Pasqal&rsquo;s
+  EMU_FREE and the local Warden mock, Alice &amp; Bob&rsquo;s Felis emulators), so
+  a QPU account is not required. The materials have been tested with Docker, Docker
+  Desktop, Rancher Desktop, Podman and WSL on Linux, macOS and Windows hosts, on x86_64
+  and aarch64. They also include a checklist of questions for taking the pattern to
+  production at a site: credentials, network access, accounting and failure recovery.</p>
+
+  <p>IBM Spectrum LSF Community Edition is not redistributed in this record. It must
+  be downloaded separately, as described in containers/lsf/docs/TUTORIAL_DOWNLOADS.md.</p>'
+authors:
+- affiliation: IBM Research - Tokyo
+  family-names: Ohtani
+  given-names: Munetaka
+  orcid: 0009-0000-5286-0393
+- affiliation: Pasqal (France)
+  family-names: Wennersteen
+  given-names: Aleksander
+  orcid: 0009-0006-5486-0980
+- affiliation: Alice & Bob (France)
+  family-names: Kissel
+  given-names: Kevin
+- affiliation: Alice & Bob (France)
+  family-names: Jamie
+  given-names: Machin
+- affiliation: IBM Research - Thomas J. Watson Research Center
+  family-names: Park
+  given-names: Yoonho
+  orcid: 0000-0002-4175-8729
+- affiliation: Qilimanjaro Quantum Tech (Spain)
+  family-names: Ortega-Carrasco
+  given-names: Elisabeth
+  orcid: 0000-0001-5410-5375
+- affiliation: Pasqal (France)
+  family-names: Badts
+  given-names: Thomas
+- affiliation: IBM (India)
+  family-names: Venkateswarlu
+  given-names: Konepalli
+cff-version: 1.2.0
+date-released: '2026-10-27'
+doi: 10.5281/zenodo.23691145
+keywords:
+- euroscivoc:1207
+- Quantum computers
+- HPC
+license:
+- cc-by-4.0
+message: If you use this software, please cite it using the metadata from this file.
+title: Workload-Manager-Agnostic QPU Integration with QRMI
+type: software
