@@ -3,7 +3,7 @@
 </a>
 
 [![License](https://img.shields.io/github/license/qrmi-community/SC26.svg?)](https://opensource.org/licenses/Apache-2.0) <!--- long-description-skip-begin -->
-[![Current Release](https://img.shields.io/github/release/qrmi-community/SC26.svg?)](https://github.com/qiskit-community/qrmi/releases)
+[![Current Release](https://img.shields.io/github/release/qrmi-community/SC26.svg?)](https://github.com/qrmi-community/SC26/releases)
 ![Platform](https://img.shields.io/badge/%F0%9F%92%BB_Platform-Linux-blue)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23691145.svg)](https://doi.org/10.5281/zenodo.23691145)
 
