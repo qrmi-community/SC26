@@ -1,13 +1,14 @@
 <a href="https://qrmi-community.github.io/tutorials/sc26/">
-  <img width="1200" alt="SC26 Tutorial: Workload-Manager-Agnostic QPU Integration with QRMI (TUT-171), Mon Nov 16, 2026, 1:30–5:00 PM CST, Room W184d, Chicago" src="https://github.com/user-attachments/assets/abdc165d-2d21-4088-a125-65ae1f2a3b78" />
+  <img width="1200" alt="SC26 Tutorial: Workload-Manager-Agnostic QPU Integration with QRMI (TUT-171), Mon Nov 16, 2026, 1:30–5:00 PM CST, Room W184d, Chicago" src="https://github.com/user-attachments/assets/90133bfc-66ee-45c9-9560-9d2d1faa8c4d" />
 </a>
 
-**Tutorial preparation for November 16, 2026.** In the batch-scheduler hands-on you
-choose **one workload manager** and **one quantum provider**, and follow only
-their parts. You install and run one cluster on your laptop; the guides show
-all four workload managers side by side so that you can compare them, but you
-skip the parts for the other three. The
-[terminology reference](hands-on/GLOSSARY.md) explains unfamiliar terms.
+> [!IMPORTANT]
+> **Tutorial preparation for November 16, 2026.** In the batch-scheduler hands-on you
+> choose **one workload manager** and **one quantum provider**, and follow only
+> their parts. You install and run one cluster on your laptop; the guides show
+> all four workload managers side by side so that you can compare them, but you
+> skip the parts for the other three. The
+> [terminology reference](hands-on/GLOSSARY.md) explains unfamiliar terms.
 
 ## 1. Choose your workload manager
 
