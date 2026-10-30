@@ -111,7 +111,6 @@ LSF:
 
 ```bash
 QPU=fake_brisbane
-export PATH=/opt/mpich/bin:$PATH
 QRMI_QPU_RESOURCES=$QPU bsub -K -oo sampling.log "python bell_sampler.py"
 mpicxx -O2 -o get_counts get_counts.cpp
 bsub -K -n 4 -R "span[ptile=2]" -oo get_counts.log mpirun ./get_counts

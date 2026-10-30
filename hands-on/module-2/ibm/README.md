@@ -81,7 +81,6 @@ LSF, on the host in `containers/lsf`:
 
 ```bash
 cp -r ../../hands-on shared/
-docker exec -u root lsf-head install -d -o lsfuser -g lsfuser /shared/pyenv
 docker exec -it -u lsfuser -w /home/lsfuser lsf-head bash -l
 ```
 

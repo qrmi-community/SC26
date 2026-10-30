@@ -25,11 +25,7 @@ This document describes how to install QRMI and the LSF hooks that manage quantu
 
 ## Overview
 
-Users request quantum resources through the `QRMI_QPU_RESOURCES` environment variable:
-
-```bash
-QRMI_QPU_RESOURCES=ibm_marrakesh bsub -Is job.sh
-```
+Users request quantum resources through the `QRMI_QPU_RESOURCES` environment variable, eg, `bash QRMI_QPU_RESOURCES=ibm_marrakesh bsub -Is job.sh`. Note that this is just an example, and no `job.sh` exists. Commands that are part of the tutorial start in [Installing the QRMI Hooks](#installing-the-qrmi-hooks).
 
 LSF follows the same pattern as the other workload managers ([One pattern, four workload managers](../../../README.md#3-one-pattern-four-workload-managers)), with fewer parts: there is no check at submission and no license or custom resource for the quantum resource; `JOB_STARTER` checks the resource when the job starts and requeues the job if it is not available. One hook (`JOB_STARTER`) handles the acquire-execute-release design pattern. The diagram below shows the flow of an LSF quantum job to an IBM Quantum Platform (IQP) system (`ibm_marrakesh`). The user submits the job with `bsub` and specifies a list of quantum resources in `QRMI_QPU_RESOURCES`. The `mbatchd` on `lsf-head` decides where to run the job and dispatches the job to an `sbatchd` on `compute01` or `compute02`. `sbatchd` starts the job through the `JOB_STARTER` hook described in more detail below.
 
@@ -69,7 +65,7 @@ One disadvantage of this design is that `compute01` or `compute02` is assigned t
 On the host, change to `containers/lsf` in the directory where you cloned the tutorial repository. The commands below run from there:
 
 ```bash
-cd <path/to/clone_dir>/containers/lsf
+cd <path to clone directory>/containers/lsf
 ```
 
 ### 1. Installing QRMI
@@ -104,7 +100,7 @@ cp qrmi_config.json.example qrmi_config.json
 
 - **Pasqal:** keep `EMU_FREE` and `PASQAL_LOCAL`. They contain no credentials: `JOB_STARTER` forwards your `HOME`, so QRMI reads your own Pasqal Cloud account from `~/.pasqal/config`.
 - **The local IBM Quantum System API emulator:** keep `fake_brisbane`. Its values point at the emulator started by `compose.ibm.yaml`.
-- **IBM Quantum Platform:** keep or add an `ibm-quantum-compute-service` entry for your backend (for example `ibm_kingston`) with your service CRN. The API key does not go into this file.
+- **IBM Quantum Platform:** keep or add an `ibm-quantum-compute-service` entry for your backend (for example `ibm_kingston`). Your service CRN and API key do not go into this file. `fake_brisbane`, the IBM Quantum System API emulator, does not have private information.
 
 Install the file for LSF. It must be readable by all users and writable only by root, because the Pasqal Local hook reads it as root:
 
@@ -113,7 +109,7 @@ docker cp qrmi_config.json lsf-head:/opt/lsfce/conf/qrmi_config.json
 docker exec -u root lsf-head bash -c "chown root:root /opt/lsfce/conf/qrmi_config.json; chmod 644 /opt/lsfce/conf/qrmi_config.json"
 ```
 
-**IBM Quantum Platform only:** put your API key into your own configuration file. Copy the template, keep the entry for your backend and fill in `QRMI_IBM_QCS_IAM_APIKEY`, then install it into your home directory, readable only by you:
+**IBM Quantum Platform only:** put your service CRN and API key into your own configuration file. Copy the template, keep the entry for your backend and fill in `QRMI_IBM_QCS_SERVICE_CRN` and `QRMI_IBM_QCS_IAM_APIKEY`, then install it into your home directory, readable only by you. This is not necessary for the IBM Quantum System API emulator which has "public" service CRN and API key.
 
 ```bash
 cp qrmi_config.json.user.example qrmi_config.json.user
@@ -183,7 +179,7 @@ show() { QRMI_QPU_RESOURCES=$1 bsub -Is "env | grep -E '^(QRMI_|$1_)' | sed -E '
   show PASQAL_LOCAL
   ```
 
-  For Pasqal Cloud, acquisition and release only check that the resource is online and do not use your credentials, so this job succeeds even with wrong credentials; they are first used when a program submits a task. Its output includes two expected QRMI warnings that acquiring and releasing are not implemented by `PasqalCloud`: Pasqal Cloud has no session to hold (`show fake_brisbane` prints the same pair for the local IBM Quantum System API emulator). For Pasqal Local, Warden logs the session the `PRE_EXEC` hook opened and the `POST_EXEC` hook revoked (on the host: `docker logs warden 2>&1 | grep /sessions`; the `DELETE` appears a few seconds after the job ends).
+For Pasqal Cloud, acquisition and release only check that the resource is online and do not use your credentials, so this job succeeds even with wrong credentials; they are first used when a program submits a task. Its output includes two expected QRMI warnings that acquiring and releasing are not implemented by `PasqalCloud`: Pasqal Cloud has no session to hold (`show fake_brisbane` prints the same pair for the local IBM Quantum System API emulator). For Pasqal Local, Warden logs the session the `PRE_EXEC` hook opened and the `POST_EXEC` hook revoked (on the host: `docker logs warden 2>&1 | grep /sessions`; the `DELETE` appears a few seconds after the job ends).
 
 - **The local IBM Quantum System API emulator:**
 

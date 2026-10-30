@@ -9,11 +9,11 @@
 | Docker Desktop | openpbs | aarch64 | macOS | Confirmed |
 | | ocs | aarch64 | macOS | Confirmed |
 | | slurm | aarch64 | macOS | |
-| | lsf | aarch64 | macOS | |
+| | lsf | aarch64 | macOS | Confirmed |
 | Rancher Desktop 1.24 | openpbs | aarch64 | macOS | Confirmed |
 | | ocs | aarch64 | macOS | Confirmed |
 | | slurm | aarch64 | macOS | Confirmed |
-| | lsf | aarch64 | macOS | |
+| | lsf | aarch64 | macOS | Confirmed |
 | Podman 6.0.2 | openpbs | aarch64 | macOS | Confirmed |
 | | ocs | aarch64 | macOS | Confirmed |
 | | slurm | aarch64 | macOS | Confirmed |
@@ -21,7 +21,7 @@
 | | openpbs | x86_64 | macOS | Confirmed |
 | | ocs | x86_64 | macOS | Confirmed |
 | | slurm | x86_64 | macOS | Confirmed |
-| | lsf | x86_64 | macOS | |
+| | lsf | x86_64 | macOS | Confirmed |
 | Windows/WSL | openpbs | x86_64 | Windows + Ubuntu 20.04| Confirmed |
 | | ocs | x86_64 | Windows  + Ubuntu 20.04 | Confirmed |
 | | slurm | x86_64 | Windows  + Ubuntu 20.04 | Confirmed |

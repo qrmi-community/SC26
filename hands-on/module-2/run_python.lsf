@@ -1,0 +1,9 @@
+#!/bin/bash
+# Run a Python program in an LSF job
+# as a job script; with `qsub ... -- <path> args` PBS runs it as a command and ignores them.
+#BSUB -J run_python
+#BSUB -Is
+
+# The participant's environment
+source $HOME/pyenv/bin/activate
+python3 "$@"

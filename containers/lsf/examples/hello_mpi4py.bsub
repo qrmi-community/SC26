@@ -6,5 +6,5 @@
 #BSUB -Is
 
 echo "=== mpirun (no -np or hostfile needed) ==="
-source $HOME/pyenv/bin/activate
+source /shared/pyenv/bin/activate
 mpirun python3 ./hello_mpi4py.py

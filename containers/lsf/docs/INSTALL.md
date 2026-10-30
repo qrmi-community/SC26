@@ -103,7 +103,7 @@ The build itself is quick. The slow steps run when the cluster first starts: the
 
 ### 2. Starting the cluster
 
-Start the cluster with the add-ons of all vendors:
+Start the cluster with the add-ons of all vendors. The `-d` specifies detached mode. If it is not used, container messages will be output to the terminal.
 
 ```bash
 podman compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml up -d
@@ -199,10 +199,9 @@ The order of the lines may differ. `Sum of ranks = 6 (expected 6)` confirms that
 Set up the Python environment for lsfuser with the following commands:
 
 ```bash
-python3 -m venv /home/lsfuser/pyenv
-source /home/lsfuser/pyenv/bin/activate
-pip install --upgrade pip
-pip install dotenv numpy requests qrmi==0.26.4 qiskit qiskit_ibm_runtime mpi4py
+python3 -m venv /shared/pyenv
+source /shared/pyenv/bin/activate
+pip install mpi4py
 ```
 
 To run the same test with mpi4py use the following command. Of course, the `source $HOME/pyenv/bin/activate` is redundant immediately after setting up the Python environment above. It was included for completeness.
@@ -225,6 +224,8 @@ Both the `hello_mpi` and `hello_mpi4py` examples can be run using bsub scripts i
 bsub < hello_mpi.bsub
 bsub < hello_mpi4py.bsub
 ```
+
+Instructions for the next step in the tutorial can be found in `hands-on/module-1/lsf/INSTALL.md`. The sections below are for reference.
 
 ### 4. Stopping and cleaning up
 
@@ -287,11 +288,12 @@ sed -i 's/10\.10\.10\./10.89.10./g' compose.yaml compose.ibm.yaml compose.warden
 
 ## Troubleshooting
 
-**A container fails to start.** The entrypoint stops at the first failing command (`set -e`), so the container exits; its output shows the failing step. A running container can be inspected as follows:
+The entrypoint stops at the first failing command (`set -e`), so the container exits; its output shows the failing step. If a container has failed to start, the logs can be inspected as follows:
 
 ```bash
 podman logs lsf-head
-podman exec -it -u root lsf-head bash
+podman logs compute01
+podman logs compute02
 ```
 
 ## END OF DOCUMENT
