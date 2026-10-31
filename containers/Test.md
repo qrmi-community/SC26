@@ -8,7 +8,7 @@
 | | lsf | x86_64 | Ubuntu 24.04.5 LTS | Confirmed |
 | Docker Desktop | openpbs | aarch64 | macOS | Confirmed |
 | | ocs | aarch64 | macOS | Confirmed |
-| | slurm | aarch64 | macOS | |
+| | slurm | aarch64 | macOS | Confirmed |
 | | lsf | aarch64 | macOS | Confirmed |
 | Rancher Desktop 1.24 | openpbs | aarch64 | macOS | Confirmed |
 | | ocs | aarch64 | macOS | Confirmed |

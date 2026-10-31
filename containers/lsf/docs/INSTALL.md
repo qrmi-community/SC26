@@ -6,7 +6,7 @@ This document describes how to set up a local, container-based LSF development e
 
 - [Container Contents](#container-contents)
 - [Prerequisites](#prerequisites)
-- [Creating a Podman-based LSF Cluster](#creating-a-podman-based-lsf-cluster)
+- [Creating a Docker-based LSF Cluster](#creating-a-docker-based-lsf-cluster)
   - [1. Building the containers](#1-building-the-containers)
   - [2. Starting the cluster](#2-starting-the-cluster)
   - [3. Verifying the cluster](#3-verifying-the-cluster)
@@ -28,7 +28,7 @@ All cluster nodes are built from the same base image with the following software
 | MPICH     | 4.2.3   | MPI implementation, built without Fortran support |
 | mpi4py    | latest at build time | Python 3.12 MPI bindings |
 
-Instructions for downloading LSF can be found in [TUTORIAL_DOWNLOADS.md](TUTORIAL_DOWNLOADS.md). The tar file should be placed in the shared directory.
+Instructions for downloading LSF can be found in [TUTORIAL_DOWNLOADS.md](TUTORIAL_DOWNLOADS.md). The appropriate archive (Apple silicon or x86_64) should be placed in `containers/shared/lsf/shared/`.
 
 MPICH is built with PMI support, so `mpirun` inside an LSF job automatically picks up the nodes allocated by LSF and launches its processes through LSF. No hostfile, `-np` option or ssh is required.
 
@@ -81,21 +81,20 @@ A container manager such as one of the following:
 
 The image builds natively on both Apple silicon (arm64) and Intel/AMD (x86_64) hosts. An image built on one architecture cannot be reused on the other; build it again on each host.
 
-## Creating a Podman-based LSF Cluster
+## Creating a Docker-based LSF Cluster
 
-> **Note for Docker users:** The commands below use the `podman` CLI. With Docker, replace `podman` with `docker` or define `alias podman=docker`.
+> **Note for Podman users:** The commands below use the `docker` CLI. With Podman, replace `podman` with `docker` or define `alias podman=docker`.
 
 ### 1. Building the containers
 
 Run the following command from the directory containing `compose.yaml`:
 
 ```bash
-podman compose build --build-arg LSF_TAR=lsfsce10.2.0.15-armv8.tar.Z    # Apple silicon (arm64)
-podman compose build --build-arg LSF_TAR=lsfsce10.2.0.15-x86_64.tar.Z   # Intel/AMD (x86_64)
+docker compose build --build-arg LSF_TAR=lsfsce10.2.0.15-armv8.tar.Z    # Apple silicon (arm64)
+docker compose build --build-arg LSF_TAR=lsfsce10.2.0.15-x86_64.tar.Z   # Intel/AMD (x86_64)
 ```
 
-Run the line for your architecture (Intel/AMD hosts, including Windows/WSL2, use the x86_64 one). The archive itself
-must be in `containers/lsf/shared/` (see [TUTORIAL_DOWNLOADS.md](TUTORIAL_DOWNLOADS.md)); it is installed on the first start.
+Run the line for your architecture (Intel/AMD hosts, including Windows/WSL2, use the x86_64 one). The archive itself must be in `containers/lsf/shared/` (see [TUTORIAL_DOWNLOADS.md](TUTORIAL_DOWNLOADS.md)); it is installed on the first start.
 
 `LSF_TAR` is stored in the image and read when the head node first starts. If the image is rebuilt without `--build-arg` (for example by `podman compose up --build`), the head node uses the package for its architecture from `containers/lsf/shared/`; if there is none, it stops with `ERROR: LSF CE package '...' does not exist in /shared`.
 
@@ -106,7 +105,7 @@ The build itself is quick. The slow steps run when the cluster first starts: the
 Start the cluster with the add-ons of all vendors. The `-d` specifies detached mode. If it is not used, container messages will be output to the terminal.
 
 ```bash
-podman compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml up -d
+docker compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml up -d
 ```
 
 `compose.ibm.yaml` adds the local IBM Quantum System API emulator (`fake_brisbane`); it builds the API emulator from GitHub on first start. `compose.warden.yaml` adds a local Warden for Pasqal Local, which shares the cluster's MUNGE key; its image is built from `containers/warden` on first start.
@@ -141,12 +140,12 @@ compute02     | LSF compute node ready. Container initialization complete.
 When running in detached mode, check the startup with:
 
 ```bash
-podman logs lsf-head | tail -n 10
-podman logs compute01 | tail -n 10
-podman logs compute02 | tail -n 10
+docker logs lsf-head | tail -n 10
+docker logs compute01 | tail -n 10
+docker logs compute02 | tail -n 10
 ```
 
-On the first start, wait until `lsf-head` prints `LSF head node ready. Container initialization complete.` (follow it with `podman logs -f lsf-head`). Until then, `lsfuser` has no LSF commands: `bhosts: command not found` means that the head node is still installing LSF or compiling MPICH.
+On the first start, wait until `lsf-head` prints `LSF head node ready. Container initialization complete.` (follow it with `docker logs -f lsf-head`). Until then, `lsfuser` has no LSF commands: `bhosts: command not found` means that the head node is still installing LSF or compiling MPICH.
 
 You now have an LSF cluster as shown below:
 
@@ -159,7 +158,7 @@ You now have an LSF cluster as shown below:
 Open a shell on `lsf-head` as `lsfuser`, starting in its home directory using the following:
 
 ```bash
-podman exec -it -u lsfuser -w /home/lsfuser lsf-head bash -l
+docker exec -it -u lsfuser -w /home/lsfuser lsf-head bash -l
 ```
 
 > Without `-w /home/lsfuser`, the shell starts in `/`. The commands below assume that the current directory is `/home/lsfuser`.
@@ -225,25 +224,25 @@ bsub < hello_mpi.bsub
 bsub < hello_mpi4py.bsub
 ```
 
-Instructions for the next step in the tutorial can be found in `hands-on/module-1/lsf/INSTALL.md`. The sections below are for reference.
-
 ### 4. Stopping and cleaning up
 
 Stop the cluster while keeping its data (the `/home` volume):
 
 ```bash
-podman compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml down
+docker compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml down
 ```
 
 Stop the cluster and remove all volumes for a completely fresh start:
 
 ```bash
-podman compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml down -v
+docker compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml down -v
 ```
 
 Use the same `-f` list you started the cluster with. Without the add-on files, Warden and the local IBM Quantum System API emulator keep running and the network is not removed.
 
-With rootless Podman, files that the containers created in `shared/` belong to sub-UIDs of your user, so `rm` cannot delete them; use `podman unshare rm -rf shared`.
+With rootless Podman, files that the containers created in `shared/` belong to sub-UIDs of your user, so `rm` cannot delete them; use `docker unshare rm -rf shared`.
+
+Instructions for the next step in the tutorial can be found in `hands-on/module-1/lsf/INSTALL.md`. The sections below are for reference.
 
 ## LSF Command Reference
 
@@ -271,7 +270,7 @@ With rootless Podman, files that the containers created in `shared/` belong to s
 1. Add a service to `compose.yaml` (for example `compute03`).
 2. Add the node name to the `getent hosts` list in `entrypoint.sh`.
 3. Add the node name to `LSF_MASTER_LIST` in `install-lsf.sh`.
-4. Run `podman compose up -d` with the same `-f` list you started the cluster with. The add-ons give each node the addresses of `warden`, `qsa-sim` and `rustfs` in `extra_hosts`; add the new node there too.
+4. Run `docker compose up -d` with the same `-f` list you started the cluster with. The add-ons give each node the addresses of `warden`, `qsa-sim` and `rustfs` in `extra_hosts`; add the new node there too.
 
 ### Changing the network
 
@@ -291,9 +290,9 @@ sed -i 's/10\.10\.10\./10.89.10./g' compose.yaml compose.ibm.yaml compose.warden
 The entrypoint stops at the first failing command (`set -e`), so the container exits; its output shows the failing step. If a container has failed to start, the logs can be inspected as follows:
 
 ```bash
-podman logs lsf-head
-podman logs compute01
-podman logs compute02
+docker logs lsf-head
+docker logs compute01
+docker logs compute02
 ```
 
 ## END OF DOCUMENT
