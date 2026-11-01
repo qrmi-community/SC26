@@ -10,10 +10,12 @@ This document describes how to install QRMI and the LSF hooks that manage quantu
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
 - [Installing the QRMI Hooks](#installing-the-qrmi-hooks)
-  - [1. Installing QRMI](#1-installing-qrmi)
-  - [2. Generating the QRMI configuration](#2-generating-the-qrmi-configuration)
-  - [3. Registering the hooks](#3-registering-the-hooks)
-  - [4. Verifying the installation](#4-verifying-the-installation)
+  - [1. Go to the cluster directory](#1-go-to-the-cluster-directory)
+  - [2. Start the LSF cluster with the add-ons of all vendors](#2-start-the-lsf-cluster-with-the-add-ons-of-all-vendors)
+  - [3. Installing QRMI](#3-installing-qrmi)
+  - [4. Generating the QRMI configuration](#4-generating-the-qrmi-configuration)
+  - [5. Registering the hooks](#5-registering-the-hooks)
+  - [6. Verifying the installation](#6-verifying-the-installation)
 - [Running QPU Jobs](#running-qpu-jobs)
   - [Using your own credentials](#using-your-own-credentials)
   - [Pasqal exercises](#pasqal-exercises)
@@ -60,15 +62,27 @@ One disadvantage of this design is that `compute01` or `compute02` is assigned t
 
 ## Installing the QRMI Hooks
 
-### 0. Go to the cluster directory
+### 1. Go to the cluster directory
 
 On the host, change to `containers/lsf` in the directory where you cloned the tutorial repository. The commands below run from there:
 
 ```bash
-cd <path to clone directory>/containers/lsf
+cd <path/to/clone_dir>/containers/lsf
 ```
 
-### 1. Installing QRMI
+### 2. Start the LSF cluster with the add-ons of all vendors
+
+Start the cluster with the add-ons of all vendors. The `-d` specifies detached mode. If it is not used, container messages will be output to the terminal.
+
+```bash
+docker compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml up -d
+```
+
+`compose.ibm.yaml` adds the local IBM Quantum System API emulator (`fake_brisbane`); it builds the API emulator from GitHub on first start. `compose.warden.yaml` adds a local Warden for Pasqal Local, which shares the cluster's MUNGE key; its image is built from `containers/warden` on first start.
+
+To run fewer containers, leave out `compose.ibm.yaml` or `compose.warden.yaml`. Both start only local backends: the IBM emulator for participants without an IBM account, and Warden as Pasqal's offline backup. Jobs on IBM Quantum Platform or Pasqal Cloud don't need them. Use the same `-f` list in every later `docker compose` command.
+
+### 3. Installing QRMI
 
 The hooks use their own Python environment in `/opt/lsfce/pyenv`, which `compute01` and `compute02` see as well. The Pasqal Local hook runs as root and imports QRMI from this environment, so install it as root and keep it owned by root:
 
@@ -88,7 +102,7 @@ Each container should print `/opt/lsfce/pyenv/lib/python3.12/site-packages/qrmi/
 
 > QRMI installed this way is stored in the shared `/opt` volume. It survives `docker compose down` and `up`, but not `docker compose down -v`.
 
-### 2. Generating the QRMI configuration
+### 4. Generating the QRMI configuration
 
 Each entry in `resources` defines one quantum resource that users can request by its `name`. The fields, the resource types and their settings are described in [QRMI_CONFIG.md](../QRMI_CONFIG.md).
 
@@ -121,7 +135,7 @@ rm qrmi_config.json.user
 
 Values in `~/.config/qrmi_config.json` override the site-wide file, and `QRMI_*` environment variables override both.
 
-### 3. Registering the hooks
+### 5. Registering the hooks
 
 Copy both hooks, owned by root (the Pasqal Local hook runs as root, and `jobstarter.qrmi` imports from it):
 
@@ -144,7 +158,7 @@ docker exec -u lsfuser lsf-head bash -c '
   source /opt/lsfce/conf/profile.lsf; badmin reconfig'
 ```
 
-### 4. Verifying the installation
+### 6. Verifying the installation
 
 Check that the hooks are registered:
 
