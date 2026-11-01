@@ -14,7 +14,7 @@ services:
   qsa-sim:
     image: localhost/qsa-sim:0d547e7
     pull_policy: never   # built or loaded locally, never pulled from a registry
-    build: https://github.com/qrmi-community/simulated_quantum_resource.git#0d547e7d329b8bd3315392e9117f116dc1661ddd
+    build: https://github.com/qrmi-community/simulated_quantum_resource.git#55ede9303a64e86adbd0485011ffc27feff55e35
     hostname: qsa-sim
     container_name: qsa-sim
     environment:
