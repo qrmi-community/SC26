@@ -83,7 +83,7 @@ The image builds natively on both Apple silicon (arm64) and Intel/AMD (x86_64) h
 
 ## Creating a Docker-based LSF Cluster
 
-> **Note for Podman users:** The commands below use the `docker` CLI. With Podman, replace `podman` with `docker` or define `alias podman=docker`.
+> **Note for Podman users:** The commands below use the `docker` CLI. With Podman, replace `docker` with `podman` or define `alias podman=docker`.
 
 ### 1. Building the containers
 
@@ -96,7 +96,7 @@ docker compose build --build-arg LSF_TAR=lsfsce10.2.0.15-x86_64.tar.Z   # Intel/
 
 Run the line for your architecture (Intel/AMD hosts, including Windows/WSL2, use the x86_64 one). The archive itself must be in `containers/lsf/shared/` (see [TUTORIAL_DOWNLOADS.md](TUTORIAL_DOWNLOADS.md)); it is installed on the first start.
 
-`LSF_TAR` is stored in the image and read when the head node first starts. If the image is rebuilt without `--build-arg` (for example by `podman compose up --build`), the head node uses the package for its architecture from `containers/lsf/shared/`; if there is none, it stops with `ERROR: LSF CE package '...' does not exist in /shared`.
+`LSF_TAR` is stored in the image and read when the head node first starts. If the image is rebuilt without `--build-arg` (for example by `docker compose up --build`), the head node uses the package for its architecture from `containers/lsf/shared/`; if there is none, it stops with `ERROR: LSF CE package '...' does not exist in /shared`.
 
 The build itself is quick. The slow steps run when the cluster first starts: the head node installs LSF (about 5 minutes) and then installs MPICH. If `containers/lsf/shared/` contains a prebuilt `mpich-4.2.3-<arch>-install.tgz` (`<arch>` is `x86_64` or `aarch64`), it is unpacked; otherwise MPICH is compiled from source, which took about 55 minutes on a 2-core laptop with 2.8 GB of RAM (Windows, WSL2, rootless Docker). Both steps run only once, because the results are kept in the `opt_install` volume; on a small machine, provide the prebuilt MPICH or do the first start before the session.
 
@@ -110,9 +110,9 @@ docker compose -f compose.yaml -f compose.ibm.yaml -f compose.warden.yaml up -d
 
 `compose.ibm.yaml` adds the local IBM Quantum System API emulator (`fake_brisbane`); it builds the API emulator from GitHub on first start. `compose.warden.yaml` adds a local Warden for Pasqal Local, which shares the cluster's MUNGE key; its image is built from `containers/warden` on first start.
 
-To run fewer containers, leave out `compose.ibm.yaml` or `compose.warden.yaml`. Both start only local backends: the IBM emulator for participants without an IBM account, and Warden as Pasqal's offline backup. Jobs on IBM Quantum Platform or Pasqal Cloud don't need them. Use the same `-f` list in every later `podman compose` command.
+To run fewer containers, leave out `compose.ibm.yaml` or `compose.warden.yaml`. Both start only local backends: the IBM emulator for participants without an IBM account, and Warden as Pasqal's offline backup. Jobs on IBM Quantum Platform or Pasqal Cloud don't need them. Use the same `-f` list in every later `docker compose` command.
 
-Use `podman ps` to check that the following three cluster containers are running (the add-ons start more, such as `warden` and `qsa-sim`):
+Use `docker ps` to check that the following three cluster containers are running (the add-ons start more, such as `warden` and `qsa-sim`):
 
 | Container    | Role |
 |--------------|------|
