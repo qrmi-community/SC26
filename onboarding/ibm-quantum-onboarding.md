@@ -1,10 +1,8 @@
 # IBM Quantum Platform Onboarding Guide
 
-This guide walks you through setting up access to IBM Quantum Platform with a free Open Plan instance.
+This guide walks you through setting up access to the IBM Quantum instance provided for the SC26 TUT171 tutorial.
 
-> Last verified: October 2026. Screens may change over time.
-
-> **Note:** Step 2 and later may be updated for the tutorial. If there are any changes, updates will be posted at https://github.com/qrmi-community/SC26 by November 9, 2026. Please check the site before the tutorial.
+> Last verified: November 15, 2026. Screens may change over time.
 
 ## Prerequisites
 
@@ -26,26 +24,23 @@ This guide walks you through setting up access to IBM Quantum Platform with a fr
 
 > **Note:** The trial account expires after 30 days. After that, you need to upgrade to a Pay-As-You-Go account to keep using it. You will not be charged if you continue to use only the free Open Plan.
 
-## Step 2: Log in to IBM Quantum Platform
+## Step 2: Request access to the IBM Quantum instance for the tutorial
+
+1. Go to https://forms.cloud.microsoft/r/XgeLVrkb7u and submit the form.
+2. You will receive an email invitation to the instance at your registered email address. Click the "Join now" link in the email.
+
+## Step 3: Log in to IBM Quantum Platform
 
 1. Go to https://quantum.cloud.ibm.com/.
-2. Log in with the account you created in Step 1.
+2. Log in with the account you used in Step 1 (email, Google, or Red Hat).
+3. From the account switcher in the top header, select "3115573 - itz-saas-174".
+4. From the region switcher next to it, select **us-east**.
 
-## Step 3: Create your free Open Plan instance
-
-On your first login, a **Create your free instance to get started** dialog appears.
-
-1. Review the preset details:
-   - **Instance name:** `open-instance`
-   - **Region:** `us-east`
-2. Select the checkbox **I have read and agree to the following license agreements**.
-3. Click **Create instance**.
-
-You are taken to the Open Plan dashboard.
+> **Note:** If you don't see "3115573 - itz-saas-174" in the account switcher, make sure you have accepted the invitation in Step 2.
 
 ### Verify: Check the available QPUs
 
-On the dashboard, confirm that the **QPUs** panel shows **3** QPUs available to your Open Plan instance:
+On the dashboard, confirm that the **QPUs** panel shows **3** QPUs available to the **QRMI Demo** instance:
 
 | QPU | Qubits | Region | Processor |
 |---|---|---|---|
@@ -57,13 +52,13 @@ Click **View all** to see more details about each QPU.
 
 > **Note:** The list of available QPUs may change over time as IBM adds or retires systems.
 
-> **Note:** The Open Plan provides 10 minutes of QPU time for free. The dialog says "each month," but the official documentation defines it as 10 minutes per rolling 28-day window.
-
 ## Step 4: Create an API key and copy your instance CRN
 
 These credentials are required to access IBM Quantum from Qiskit.
 
 ### Create an API key
+
+> **Note:** Before you create the API key, make sure "3115573 - itz-saas-174" is selected in the account switcher.
 
 1. In the **API key** section at the top left of the dashboard, click **Create**.
 2. When the **API key successfully created** dialog appears, click **Copy** or **Download** and store the API key in a secure location.
@@ -72,11 +67,11 @@ These credentials are required to access IBM Quantum from Qiskit.
 
 ### Copy your instance CRN
 
-1. In the **Instances** section, just below the API key section, find `open-instance`.
+1. In the **Instances** section, just below the API key section, find `QRMI Demo`.
 2. Click the **CRN** copy icon next to it.
 3. Store the CRN in a secure location.
 
-> **Tip:** The Instances section also shows your plan (`open`) and remaining QPU time (for example, `10m 0s (100%) remain`).
+> **Tip:** The Instances section also shows the instance's plan (`flux`) and remaining resources (for example, `180.00 RU remain`).
 
 > **Important:** Treat your API key like a password. Do not share it or commit it to public code repositories.
 
