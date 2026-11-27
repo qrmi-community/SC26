@@ -7,14 +7,9 @@
 ![Platform](https://img.shields.io/badge/%F0%9F%92%BB_Platform-Linux-blue)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23691145.svg)](https://doi.org/10.5281/zenodo.23691145)
 
-
-> [!IMPORTANT]
-> **Tutorial preparation for November 16, 2026.** In the batch-scheduler hands-on you
-> choose **one workload manager** and **one quantum provider**, and follow only
-> their parts. You install and run one cluster on your laptop; the guides show
-> all four workload managers side by side so that you can compare them, but you
-> skip the parts for the other three. The
-> [terminology reference](hands-on/GLOSSARY.md) explains unfamiliar terms.
+> [!NOTE]
+> **This tutorial has ended.** Thank you to everyone who joined us at SC26!
+> If you try the materials yourself and run into problems or have questions, feel free to [open a GitHub issue](https://github.com/qrmi-community/SC26/issues/new). The presenters will see it and can talk with you there.
 
 ## 1. Choose your workload manager
 
